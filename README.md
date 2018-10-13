@@ -1,4 +1,4 @@
-Recommendation System 
+Collaborative Filtering Recommender System 
 ================
 
 Building a Recommendation Engine with Neo4j & Python
