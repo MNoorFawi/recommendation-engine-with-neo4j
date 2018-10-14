@@ -23,7 +23,7 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
 
            ORDER BY jaccard_index DESC, c2.customerID
            WITH c1, COLLECT(c2)[0..{k}] as neighbors
-           WHERE LENGTH(neighbors) = {k}                                              
+           WHERE SIZE(neighbors) = {k}                                              
            UNWIND neighbors as neighbor
            WITH c1, neighbor
 
