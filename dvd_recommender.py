@@ -1,5 +1,6 @@
 ## Our Recommender System Script (dvd_recommender.py)
 import sys
+from pprint import pprint
 from py2neo import authenticate, Graph
 
 cid = sys.argv[1:]
@@ -42,4 +43,4 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
             recommendations[i[0]] = i[1]
     return recommendations
 
-print(cf_recommender(g, cid, 25, 5))
+pprint(cf_recommender(g, cid, 25, 5))
