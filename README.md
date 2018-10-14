@@ -39,6 +39,7 @@ Let's now run our database and connect it to python and do some query to get the
 ###### from command line run **neo4j console**
 
 ``` python
+from pprint import pprint
 from py2neo import authenticate, Graph
 authenticate("localhost:7474", "username", "password") 
 g = Graph("http://localhost:7474/db/data/")
@@ -101,18 +102,18 @@ for i in g.cypher.execute(query, cid = "13", k = 25):
     neighbors[i[0]] = i[1]
 
 print("# customer13's 25 nearest neighbors: customerID, jaccard_index, intersection, union")
-display(neighbors)
+pprint(neighbors)
 
 # customer13's 25 nearest neighbors: customerID, jaccard_index, intersection, union
 {'13': [['93', 0.08695652173913043, 4, 46],
-  ['211', 0.07142857142857142, 4, 56],
-  ['379', 0.06521739130434782, 3, 46],
-  ['578', 0.06521739130434782, 3, 46],
-  ['134', 0.06382978723404255, 3, 47],
-  ['8', 0.06382978723404255, 3, 47],
-  ......
-  ['464', 0.05, 2, 40],
-  ['555', 0.047619047619047616, 2, 42]]}
+        ['211', 0.07142857142857142, 4, 56],
+        ['379', 0.06521739130434782, 3, 46],
+        ['578', 0.06521739130434782, 3, 46],
+        ['134', 0.06382978723404255, 3, 47],
+        ['8', 0.06382978723404255, 3, 47],
+        ......
+        ['464', 0.05, 2, 40],
+        ['555', 0.047619047619047616, 2, 42]]}
 ```
 
 Now let's see the top 5 movies that we can recommend to our target user and how many of their nearest neighbors have rented these movies ...
@@ -139,14 +140,14 @@ for i in g.cypher.execute(query, cid = "13", nearest_neighbors = nearest_neighbo
     recommendations[i[0]] = i[1]
     
 print("# customer13's recommendations: Movie, number of rentals by neighbors")
-display(recommendations)
+pprint(recommendations)
 
 # customer13's recommendations: Movie, number of rentals by neighbors
 {'13': [['Goodfellas Salute', 5],
-  ['Pacific Amistad', 4],
-  ['Streetcar Intentions', 4],
-  ['Chill Luck', 4],
-  ['Whisperer Giant', 4]]}
+        ['Pacific Amistad', 4],
+        ['Streetcar Intentions', 4],
+        ['Chill Luck', 4],
+        ['Whisperer Giant', 4]]}
   
 ```
 
@@ -155,6 +156,7 @@ VERY NICE! Now we have successfully built our Recommender System that can recomm
 ``` python
 ## Our Recommender System Script (dvd_recommender.py)
 import sys
+from pprint import pprint
 from py2neo import authenticate, Graph
 
 cid = sys.argv[1:]
@@ -197,7 +199,7 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
             recommendations[i[0]] = i[1]
     return recommendations
 
-print(cf_recommender(g, cid, 25, 5))
+pprint(cf_recommender(g, cid, 25, 5))
 ```
 
 Run the system from command line ...
@@ -205,8 +207,25 @@ Run the system from command line ...
 ``` bash
 $ python dvd_recommender.py 13 11 19 91 
 
-{'13': ['Goodfellas Salute', 'Pacific Amistad', 'Streetcar Intentions', 'Chill Luck', 'Whisperer Giant'],
- '11': ['Sweethearts Suspects', 'Tights Dawn', 'Island Exorcist', 'Jason Trap', 'Earth Vision'],
- '19': ['Fatal Haunted', 'Crossroads Casualties', 'Ridgemont Submarine', 'Wonderland Christmas', 'Uptown Young'],
- '91': ['Forrester Comancheros', 'Anaconda Confessions', 'Bear Graceland', 'Greatest North', 'Hanover Galaxy']}
+{'13': ['Goodfellas Salute', 
+        'Pacific Amistad',
+        'Streetcar Intentions',
+        'Chill Luck',
+        'Whisperer Giant'],
+ '11': ['Sweethearts Suspects',
+        'Tights Dawn',
+        'Island Exorcist',
+        'Jason Trap',
+        'Earth Vision'],
+ '19': ['Fatal Haunted',
+        'Crossroads Casualties',
+        'Ridgemont Submarine',
+        'Wonderland Christmas',
+        'Uptown Young'],
+ '91': ['Forrester Comancheros',
+        'Anaconda Confessions',
+        'Bear Graceland',
+        'Greatest North',
+        'Hanover Galaxy']}
 ```
+
