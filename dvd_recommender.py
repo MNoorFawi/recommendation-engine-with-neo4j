@@ -5,7 +5,7 @@ from py2neo import authenticate, Graph
 
 cid = sys.argv[1:]
 
-authenticate("localhost:7474", "neo4j", "neodbase") 
+authenticate("localhost:7474", "username", "password") 
 g = Graph("http://localhost:7474/db/data/")
 
 def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
@@ -20,7 +20,7 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
            WITH c1, c2, intersection, COUNT(DISTINCT f) as union
 
            WITH c1, c2, intersection, union, 
-              (intersection * 1.0 / union) as jaccard_index
+                (intersection * 1.0 / union) as jaccard_index
 
            ORDER BY jaccard_index DESC, c2.customerID
            WITH c1, COLLECT(c2)[0..{k}] as neighbors
@@ -33,7 +33,7 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
            WITH c1, f, COUNT(DISTINCT neighbor) as countnns
            ORDER BY c1.customerID, countnns DESC                            
            RETURN c1.customerID as customer, 
-              COLLECT(f.Title)[0..{n}] as recommendations      
+                  COLLECT(f.Title)[0..{n}] as recommendations      
            """
 
     recommendations = {}
