@@ -44,3 +44,69 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
     return recommendations
 
 pprint(cf_recommender(g, cid, 25, 5))
+
+# to return the data in json form for further usage with different apps
+# from json import dumps
+# recommendations = []
+# for c in cid:
+#   for i in graph.cypher.execute(query, cid = c, k = nearest_neighbors, n = num_recommendations):
+#   recommendations.append({'userID': i[0], 'recommended_movies': i[1]})
+# return dumps(recommendations)
+# 
+# recos = cf_recommender(g, cid, 25, 5)
+# print(recos)
+# 
+# to try it in command line and save it to a file
+# python dvd_recommender.py 13 11 19 91 > recos.txt
+# 
+# to reload the data and convert it to csv file
+# < recos.txt json2csv | csvlook
+# 
+# | userID | recommended_movies                                                                                  |
+# | ------ | --------------------------------------------------------------------------------------------------- |
+# |     13 | ["Goodfellas Salute","Whisperer Giant","Mob Duffel","Fellowship Autumn","Pacific Amistad"]          |
+# |     11 | ["Sweethearts Suspects","Tights Dawn","Island Exorcist","Jason Trap","Dying Maker"]                 |
+# |     19 | ["Fatal Haunted","Dream Pickup","Honey Ties","Crossroads Casualties","Ridgemont Submarine"]         |
+# |     91 | ["Forrester Comancheros","Hanover Galaxy","Anaconda Confessions","Greatest North","Bear Graceland"] |
+#   
+# to load it in python converting it to a data frame
+# import json
+# import pandas as pd
+# from pprint import pprint
+# data = []
+# with open("recos.txt") as j:
+#   data = json.load(j)
+# 
+# pprint(data)
+# pd.DataFrame(data)
+# 
+# [{'recommended_movies': ['Goodfellas Salute',
+#                          'Whisperer Giant',
+#                          'Mob Duffel',
+#                          'Fellowship Autumn',
+#                          'Pacific Amistad'],
+#   'userID': '13'},
+#  {'recommended_movies': ['Sweethearts Suspects',
+#                           'Tights Dawn',
+#                           'Island Exorcist',
+#                           'Jason Trap',
+#                           'Dying Maker'],
+#   'userID': '11'},
+#  {'recommended_movies': ['Fatal Haunted',
+#                           'Dream Pickup',
+#                           'Honey Ties',
+#                           'Crossroads Casualties',
+#                           'Ridgemont Submarine'],
+#    'userID': '19'},
+#   {'recommended_movies': ['Forrester Comancheros',
+#                           'Hanover Galaxy',
+#                           'Anaconda Confessions',
+#                           'Greatest North',
+#                           'Bear Graceland'],
+#    'userID': '91'}]
+# 
+#                                   recommended_movies userID
+# 0  [Goodfellas Salute, Whisperer Giant, Mob Duffe...     13
+# 1  [Sweethearts Suspects, Tights Dawn, Island Exo...     11
+# 2  [Fatal Haunted, Dream Pickup, Honey Ties, Cros...     19
+# 3  [Forrester Comancheros, Hanover Galaxy, Anacon...     91
