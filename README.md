@@ -40,16 +40,15 @@ Let's now run our database and connect it to python and do some query to get the
 
 ``` python
 from pprint import pprint
-from py2neo import authenticate, Graph
-authenticate("localhost:7474", "username", "password") 
-g = Graph("http://localhost:7474/db/data/")
+from py2neo import Graph
+g = Graph("http://localhost:7474/db/data/", password = "password")
 
 query = """
 MATCH (cat:Category)<-[g:OF_GENRE]-()
 RETURN cat.Name AS genre, COUNT(g) AS number_of_movies
 ORDER BY number_of_movies DESC;
 """
-g.cypher.execute(query)
+g.run(query).to_data_frame()
 
     | genre       | number_of_movies
 ----+-------------+------------------
@@ -78,7 +77,7 @@ query = """
         // get target user and their neighbors pairs and count 
         // of distinct movies that they have rented in common
         MATCH (c1:Customer)-[:RENTED]->(f:Film)<-[:RENTED]-(c2:Customer)
-        WHERE c1 <> c2 AND c1.customerID = {cid}
+        WHERE c1 <> c2 AND c1.customerID = $cid
         WITH c1, c2, COUNT(DISTINCT f) as intersection
 
         // get count of all the distinct movies that they have rented in total (Union)
@@ -91,15 +90,15 @@ query = """
         
         // get top k nearest neighbors based on Jaccard index
         ORDER BY jaccard_index DESC, c2.customerID
-        WITH c1, COLLECT([c2.customerID, jaccard_index, intersection, union])[0..{k}] as neighbors
+        WITH c1, COLLECT([c2.customerID, jaccard_index, intersection, union])[0..$k] as neighbors
      
-        WHERE SIZE(neighbors) = {k}   // return users with enough neighbors
+        WHERE SIZE(neighbors) = $k   // return users with enough neighbors
         RETURN c1.customerID as customer, neighbors
         """
 
 neighbors = {}
-for i in g.cypher.execute(query, cid = "13", k = 25):
-    neighbors[i[0]] = i[1]
+for i in g.run(query, cid = "13", k = 25).data():
+    neighbors[i["customer"]] = i["neighbors"]
 
 print("# customer13's 25 nearest neighbors: customerID, jaccard_index, intersection, union")
 pprint(neighbors)
@@ -126,18 +125,18 @@ query = """
         // get top n recommendations for customer 13 from their nearest neighbors
         MATCH (c1:Customer),
               (neighbor:Customer)-[:RENTED]->(f:Film)    // all movies rented by neighbors
-        WHERE c1.customerID = {cid}
-          AND neighbor.customerID in {nearest_neighbors}
+        WHERE c1.customerID = $cid
+          AND neighbor.customerID in $nearest_neighbors
           AND not (c1)-[:RENTED]->(f)                    // filter for movies that our user hasn't rented
         
         WITH c1, f, COUNT(DISTINCT neighbor) as countnns // times rented by nns
         ORDER BY c1.customerID, countnns DESC               
-        RETURN c1.customerID as customer, COLLECT([f.Title, countnns])[0..{n}] as recommendations  
+        RETURN c1.customerID as customer, COLLECT([f.Title, countnns])[0..$n] as recommendations  
         """
 
 recommendations = {}
-for i in g.cypher.execute(query, cid = "13", nearest_neighbors = nearest_neighbors, n = 5):
-    recommendations[i[0]] = i[1]
+for i in g.run(query, cid = "13", nearest_neighbors = nearest_neighbors, n = 5).data():
+    recommendations[i["customer"]] = i["recommendations"]
     
 print("# customer13's recommendations: Movie, number of rentals by neighbors")
 pprint(recommendations)
@@ -157,18 +156,17 @@ VERY NICE! Now we have successfully built our Recommender System that can recomm
 ## Our Recommender System Script (dvd_recommender.py)
 import sys
 from pprint import pprint
-from py2neo import authenticate, Graph
+from py2neo import Graph
 
 cid = sys.argv[1:]
 
-authenticate("localhost:7474", "username", "password") 
-g = Graph("http://localhost:7474/db/data/")
+g = Graph("http://localhost:7474/db/data/", password = "password")
 
 def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
 
     query = """
            MATCH (c1:Customer)-[:RENTED]->(f:Film)<-[:RENTED]-(c2:Customer)
-           WHERE c1 <> c2 AND c1.customerID = {cid}
+           WHERE c1 <> c2 AND c1.customerID = $cid
            WITH c1, c2, COUNT(DISTINCT f) as intersection
            
            MATCH (c:Customer)-[:RENTED]->(f:Film)
@@ -179,8 +177,8 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
               (intersection * 1.0 / union) as jaccard_index
 
            ORDER BY jaccard_index DESC, c2.customerID
-           WITH c1, COLLECT(c2)[0..{k}] as neighbors
-           WHERE SIZE(neighbors) = {k}                                              
+           WITH c1, COLLECT(c2)[0..$k] as neighbors
+           WHERE SIZE(neighbors) = $k                                              
            UNWIND neighbors as neighbor
            WITH c1, neighbor
 
@@ -189,14 +187,14 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
            WITH c1, f, COUNT(DISTINCT neighbor) as countnns
            ORDER BY c1.customerID, countnns DESC                            
            RETURN c1.customerID as customer, 
-              COLLECT(f.Title)[0..{n}] as recommendations      
+              COLLECT(f.Title)[0..$n] as recommendations      
            """
 
     recommendations = {}
     # cid = [str(c) for c in cid]
     for c in cid:
-        for i in graph.cypher.execute(query, cid = c, k = nearest_neighbors, n = num_recommendations):
-            recommendations[i[0]] = i[1]
+        for i in graph.run(query, cid = c, k = nearest_neighbors, n = num_recommendations).data():
+            recommendations[i["customer"]] = i["recommendations"]
     return recommendations
 
 pprint(cf_recommender(g, cid, 25, 5))
