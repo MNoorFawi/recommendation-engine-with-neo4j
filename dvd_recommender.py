@@ -40,7 +40,7 @@ def cf_recommender(graph, cid, nearest_neighbors, num_recommendations):
     # cid = [str(c) for c in cid]
     for c in cid:
         for i in graph.run(query, cid = c, k = nearest_neighbors, n = num_recommendations).data():
-            recommendations[i[0]] = i[1]
+            recommendations[i["customer"]] = i["recommendations"]
     return recommendations
 
 pprint(cf_recommender(g, cid, 25, 5))
